@@ -1,14 +1,16 @@
+#ifndef _NTDLLAPI_H_
+#define _NTDLLAPI_H_
+
 #pragma once
+
 #include <winternl.h>
 #include <windows.h>
 #include <psapi.h>
 #include <subauth.h>
 #include <tlhelp32.h>
-//#include <devguid.h>    // for GUID_DEVCLASS_CDROM etc
-//#include <setupapi.h>
-//#include <cfgmgr32.h>   // for MAX_DEVICE_ID_LEN, CM_Get_Parent and CM_Get_Device_ID
+#include <cstdlib>
 #include <tchar.h>
-//#include <stdio.h>
+#include <vector>
 
 #define STRSAFE_LIB
 #include <strsafe.h>
@@ -89,48 +91,8 @@ enum PROCESSINFOCLASS : int
 	MaxProcessInfoClass
 };
 
-typedef ULONG smPPS_POST_PROCESS_INIT_ROUTINE;
+typedef ULONG PPS_POST_PROCESS_INIT_ROUTINE;
 
-// Used in PEB struct
-typedef struct _smPEB_LDR_DATA {
-	BYTE Reserved1[8];
-	PVOID Reserved2[3];
-	LIST_ENTRY InMemoryOrderModuleList;
-} smPEB_LDR_DATA, *smPPEB_LDR_DATA;
-
-// Used in PEB struct
-typedef struct _smRTL_USER_PROCESS_PARAMETERS {
-	BYTE Reserved1[16];
-	PVOID Reserved2[10];
-	UNICODE_STRING ImagePathName;
-	UNICODE_STRING CommandLine;
-} smRTL_USER_PROCESS_PARAMETERS, *smPRTL_USER_PROCESS_PARAMETERS;
-
-// Used in PROCESS_BASIC_INFORMATION struct
-typedef struct _smPEB {
-	BYTE Reserved1[2];
-	BYTE BeingDebugged;
-	BYTE Reserved2[1];
-	PVOID Reserved3[2];
-	smPPEB_LDR_DATA Ldr;
-	smPRTL_USER_PROCESS_PARAMETERS ProcessParameters;
-	BYTE Reserved4[104];
-	PVOID Reserved5[52];
-	smPPS_POST_PROCESS_INIT_ROUTINE PostProcessInitRoutine;
-	BYTE Reserved6[128];
-	PVOID Reserved7[1];
-	ULONG SessionId;
-} smPEB, *smPPEB;
-
-// Used with NtQueryInformationProcess
-typedef struct _smPROCESS_BASIC_INFORMATION {
-	LONG ExitStatus;
-	smPPEB PebBaseAddress;
-	ULONG_PTR AffinityMask;
-	LONG BasePriority;
-	ULONG_PTR UniqueProcessId;
-	ULONG_PTR InheritedFromUniqueProcessId;
-} smPROCESS_BASIC_INFORMATION, *smPPROCESS_BASIC_INFORMATION;
 
 typedef enum _SYSTEMINFOCLASS
 {
@@ -192,42 +154,40 @@ typedef enum _SYSTEMINFOCLASS
 } SYSTEMINFOCLASS, *PSYSTEMINFOCLASS;
 
 typedef struct _SYSTEM_PROCESS_INFORMATION {
-	ULONG NextEntryOffset;
-	ULONG NumberOfThreads;
-	LARGE_INTEGER WorkingSetPrivateSize;
-	ULONG HardFaultCount;
-	ULONG NumberOfThreadsHighWatermark;
-	ULONGLONG CycleTime;
-	LARGE_INTEGER CreateTime;
-	LARGE_INTEGER UserTime;
-	LARGE_INTEGER KernelTime;
-	UNICODE_STRING ImageName;
-	LONG BasePriority;
-	PVOID UniqueProcessId;
-	PVOID InheritedFromUniqueProcessId;
-	ULONG HandleCount;
-	ULONG SessionId;
-	ULONG_PTR UniqueProcessKey;
-	ULONG_PTR PeakVirtualSize;
-	ULONG_PTR VirtualSize;
-	ULONG PageFaultCount;
-	ULONG_PTR PeakWorkingSetSize;
-	ULONG_PTR WorkingSetSize;
-	ULONG_PTR QuotaPeakPagedPoolUsage;
-	ULONG_PTR QuotaPagedPoolUsage;
-	ULONG_PTR QuotaPeakNonPagedPoolUsage;
-	ULONG_PTR QuotaNonPagedPoolUsage;
-	ULONG_PTR PagefileUsage;
-	ULONG_PTR PeakPagefileUsage;
-	ULONG_PTR PrivatePageCount;
-	LARGE_INTEGER ReadOperationCount;
-	LARGE_INTEGER WriteOperationCount;
-	LARGE_INTEGER OtherOperationCount;
-	LARGE_INTEGER ReadTransferCount;
-	LARGE_INTEGER WriteTransferCount;
-	LARGE_INTEGER OtherTransferCount;
-
-
+	ULONG			NextEntryOffset;
+	ULONG			NumberOfThreads;
+	LARGE_INTEGER	WorkingSetPrivateSize;
+	ULONG			HardFaultCount;
+	ULONG			NumberOfThreadsHighWatermark;
+	ULONGLONG		CycleTime;
+	LARGE_INTEGER	CreateTime;
+	LARGE_INTEGER	UserTime;
+	LARGE_INTEGER	KernelTime;
+	UNICODE_STRING	ImageName;
+	LONG			BasePriority;
+	PVOID			UniqueProcessId;
+	PVOID			InheritedFromUniqueProcessId;
+	ULONG			HandleCount;
+	ULONG			SessionId;
+	ULONG_PTR		UniqueProcessKey;
+	ULONG_PTR		PeakVirtualSize;
+	ULONG_PTR		VirtualSize;
+	ULONG			PageFaultCount;
+	ULONG_PTR		PeakWorkingSetSize;
+	ULONG_PTR		WorkingSetSize;
+	ULONG_PTR		QuotaPeakPagedPoolUsage;
+	ULONG_PTR		QuotaPagedPoolUsage;
+	ULONG_PTR		QuotaPeakNonPagedPoolUsage;
+	ULONG_PTR		QuotaNonPagedPoolUsage;
+	ULONG_PTR		PagefileUsage;
+	ULONG_PTR		PeakPagefileUsage;
+	ULONG_PTR		PrivatePageCount;
+	LARGE_INTEGER	ReadOperationCount;
+	LARGE_INTEGER	WriteOperationCount;
+	LARGE_INTEGER	OtherOperationCount;
+	LARGE_INTEGER	ReadTransferCount;
+	LARGE_INTEGER	WriteTransferCount;
+	LARGE_INTEGER	OtherTransferCount;
 } SYSTEM_PROCESS_INFORMATION, *PSYSTEM_PROCESS_INFORMATION;
 
 // NtQueryInformationProcess in NTDLL.DLL
@@ -242,45 +202,20 @@ typedef NTSTATUS(NTAPI *pfnNtQueryInformationProcess)(
 
 // NtQuerySystemInformation in NTDLL.DLL
 typedef NTSTATUS(NTAPI *pfnNtQuerySystemInformation)(
-	_In_ SYSTEMINFOCLASS	SystemInformationClass,
-	_Out_ PVOID				pSystemInformation,
-	_In_ ULONG				uSystemInformationLength,
-	_Out_ PULONG			puReturnLength OPTIONAL
+	_In_ SYSTEMINFOCLASS SystemInformationClass,
+	_Out_ PVOID	pSystemInformation,
+	_In_ ULONG uSystemInformationLength,
+	_Out_ PULONG puReturnLength OPTIONAL
 	);
 
-typedef NTSTATUS(NTAPI *pfnNtAdjustPrivilegesToken)(
-	_In_ HANDLE               TokenHandle,
-	_In_ BOOLEAN              DisableAllPrivileges,
-	_In_ PTOKEN_PRIVILEGES    TokenPrivileges,
-	_In_ ULONG                PreviousPrivilegesLength,
-	_Out_ PTOKEN_PRIVILEGES   PreviousPrivileges OPTIONAL,
-	_Out_ PULONG              RequiredLength OPTIONAL
-	);
-
-//typedef struct _IO_COUNTERS {
-//	ULONGLONG ReadOperationCount;
-//	ULONGLONG WriteOperationCount;
-//	ULONGLONG OtherOperationCount;
-//	ULONGLONG ReadTransferCount;
-//	ULONGLONG WriteTransferCount;
-//	ULONGLONG OtherTransferCount;
-//} IO_COUNTERS;
-//typedef IO_COUNTERS *PIO_COUNTERS;
-
-typedef struct _smPROCESSINFO
+typedef struct PROCESSINFO
 {
 	DWORD	dwPID;
-	DWORD	dwParentPID;
-	DWORD	dwSessionID;
-	DWORD	dwPEBBaseAddress;
-	DWORD	dwAffinityMask;
-	LONG	dwBasePriority;
-	LONG	dwExitStatus;
-	BYTE	cBeingDebugged;
-	TCHAR	szImgPath[MAX_UNICODE_PATH];
-	TCHAR	szCmdLine[MAX_UNICODE_PATH];
+	std::string	ImageName;
 	IO_COUNTERS ioCounters;
-} smPROCESSINFO;
+	ULONGLONG AllOpsCnt;
+	ULONGLONG AllBytes;
+} PROCESSINFO;
 
 class NTDLLAPI {
 
@@ -288,8 +223,18 @@ public:
 
 	pfnNtQuerySystemInformation gNtQuerySystemInformation;
 	pfnNtQueryInformationProcess gNtQueryInformationProcess;
-	pfnNtAdjustPrivilegesToken gNtAdjustPrivilegesToken;
 
-	HMODULE sm_LoadNTDLLFunctions(void);
-	void sm_FreeNTDLLFunctions(_In_ HMODULE hNtDll);
+	HMODULE loadNTDLLFunctions(void);
+	void freeNTDLLFunctions(_In_ HMODULE hNtDll);
 };
+
+enum ProgCodes {
+	success,
+	procNotFound,
+	unableToGetInfo,
+	unableToEnablePrivilege,
+	unableToOpenFIle,
+	wrongArguments
+};
+
+#endif

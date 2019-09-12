@@ -1,7 +1,7 @@
 #include "ntdllapi.h"
 
 // Load NTDLL Library and get entry addresses
-HMODULE NTDLLAPI::sm_LoadNTDLLFunctions()
+HMODULE NTDLLAPI::loadNTDLLFunctions()
 {
 	HMODULE hNtDll = LoadLibrary(_T("ntdll.dll"));
 	if (hNtDll == NULL) return NULL;
@@ -12,11 +12,7 @@ HMODULE NTDLLAPI::sm_LoadNTDLLFunctions()
 	gNtQueryInformationProcess = (pfnNtQueryInformationProcess)GetProcAddress(hNtDll,
 		"NtQueryInformationProcess");
 
-	gNtAdjustPrivilegesToken = (pfnNtAdjustPrivilegesToken)GetProcAddress(hNtDll,
-		"NtAdjustPrivilegesToken");
-
-	if (gNtQuerySystemInformation == NULL || gNtQueryInformationProcess == NULL
-		|| gNtAdjustPrivilegesToken == NULL) {
+	if (gNtQuerySystemInformation == NULL || gNtQueryInformationProcess == NULL) {
 		FreeLibrary(hNtDll);
 		return NULL;
 	}
@@ -24,11 +20,11 @@ HMODULE NTDLLAPI::sm_LoadNTDLLFunctions()
 	return hNtDll;
 }
 
-// Unloads the NTDLL.DLL and resets the
-// global gNtQueryInformationProcess variable
-void NTDLLAPI::sm_FreeNTDLLFunctions(HMODULE hNtDll)
+// Unloads the NTDLL.DLL and resets the ntdll methods
+void NTDLLAPI::freeNTDLLFunctions(HMODULE hNtDll)
 {
 	if (hNtDll)
 		FreeLibrary(hNtDll);
 	gNtQueryInformationProcess = NULL;
+	gNtQuerySystemInformation = NULL;
 }

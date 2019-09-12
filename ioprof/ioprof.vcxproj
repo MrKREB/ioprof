@@ -115,13 +115,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ConsoleInterface.h" />
+    <ClInclude Include="FileWorker.h" />
     <ClInclude Include="ioprof.h" />
     <ClInclude Include="ntdllapi.h" />
+    <ClInclude Include="pugixml.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConsoleInterface.cpp" />
+    <ClCompile Include="FileWorker.cpp" />
     <ClCompile Include="ioprof.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ntdllapi.cpp" />
+    <ClCompile Include="pugixml.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
