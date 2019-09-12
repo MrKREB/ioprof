@@ -11,7 +11,7 @@ FileWorker::~FileWorker()
 }
 
 
-void FileWorker::writeFile(char* filename, std::vector<PROCESSINFO> arr) {
+ProgCodes FileWorker::writeFile(char* filename, std::vector<PROCESSINFO> arr) {
 	pugi::xml_document doc;
 	pugi::xml_node nodeChild;
 	pugi::xml_node child;
@@ -58,12 +58,14 @@ void FileWorker::writeFile(char* filename, std::vector<PROCESSINFO> arr) {
 		child.append_child(pugi::node_pcdata).set_value(std::to_string(arr[i].ioCounters.OtherTransferCount).c_str());
 	}
 
-	bool saveSucceeded = doc.save_file(filename, PUGIXML_TEXT("  "));
+	if (!doc.save_file(filename, PUGIXML_TEXT("  ")))
+		return unableToSaveFile;
+
+	return success;
 }
 
 
-
- ProgCodes FileWorker::readFile(char* filename, std::vector<PROCESSINFO> *spi) {
+ProgCodes FileWorker::readFile(char* filename, std::vector<PROCESSINFO> *spi) {
 	pugi::xml_document doc;
 
 	pugi::xml_parse_result result = doc.load_file(filename,

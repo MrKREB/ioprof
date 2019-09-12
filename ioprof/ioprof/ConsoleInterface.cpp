@@ -10,6 +10,8 @@ ConsoleInterface::~ConsoleInterface()
 {
 }
 
+
+// Parse command line arguments, estabilish instructions and run comand
 void ConsoleInterface::parseCmd(int argc, char* cmd[]) {
 	if (argc < 3) {
 		printError(wrongArguments);
@@ -80,6 +82,8 @@ void ConsoleInterface::parseCmd(int argc, char* cmd[]) {
 	runCmd();
 }
 
+
+// Run command with estabilished instructions
 void ConsoleInterface::runCmd() {
 	std::vector<PROCESSINFO> spi;
 	ProgCodes code;
@@ -92,6 +96,7 @@ void ConsoleInterface::runCmd() {
 			DWORD dwPID = ioprof.findProcessId(procName);
 			spi.emplace_back();
 			code = ioprof.getNtProcessInfo(dwPID, &spi[0]);
+			spi[0].ImageName = procName;
 		}
 	} else if (readFile) {
 		code = worker.readFile(filename, &spi);
@@ -103,6 +108,7 @@ void ConsoleInterface::runCmd() {
 		if (saveToFile) worker.writeFile(filename, spi);
 	}
 }
+
 
 void ConsoleInterface::printError(ProgCodes err) {
 	switch (err) {
@@ -122,9 +128,12 @@ void ConsoleInterface::printError(ProgCodes err) {
 	}
 }
 
+
+// Compare metod for sorting
 bool compare(PROCESSINFO arg1, PROCESSINFO arg2) {
 	return arg1.AllBytes > arg2.AllBytes;
 }
+
 
 void ConsoleInterface::printRes(std::vector<PROCESSINFO> res) {
 	int cycleNum;
@@ -143,6 +152,7 @@ void ConsoleInterface::printRes(std::vector<PROCESSINFO> res) {
 			res[i].ioCounters.WriteTransferCount, res[i].ioCounters.OtherTransferCount);
 	}
 }
+
 
 void ConsoleInterface::printHelp() {
 	printf("Command format:\n");

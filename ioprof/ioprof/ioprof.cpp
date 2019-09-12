@@ -18,17 +18,15 @@ IoProf::~IoProf()
 HANDLE IoProf::getProcessList(PROCESSENTRY32 *pe32) {
 	HANDLE hProcessSnap;
 
-	// Take a snapshot of all processes in the system.
+
 	hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (INVALID_HANDLE_VALUE == hProcessSnap) return(INVALID_HANDLE_VALUE);
+	if (INVALID_HANDLE_VALUE == hProcessSnap) return INVALID_HANDLE_VALUE;
 
 	pe32->dwSize = sizeof(PROCESSENTRY32);
 
-	// Retrieve information about the first process,
-	// and exit if unsuccessful
 	if (!Process32First(hProcessSnap, pe32))
 	{
-		CloseHandle(hProcessSnap);			// clean the snapshot object
+		CloseHandle(hProcessSnap);
 		printf("!!! Failed to gather information on system processes! \n");
 		return(INVALID_HANDLE_VALUE);
 	}
@@ -36,7 +34,7 @@ HANDLE IoProf::getProcessList(PROCESSENTRY32 *pe32) {
 	return hProcessSnap;
 }
 
-// Get Id of process
+// Get process id by image name
 DWORD IoProf::findProcessId(char processname[])
 {
 	HANDLE hProcessSnap;
@@ -92,7 +90,7 @@ ProgCodes IoProf::enableTokenPrivilege(LPCTSTR pszPrivilege)
 }
 
 
-// Get information about all processes
+// Get information about all processes in system
 ProgCodes IoProf::getNtProcessesInfo(std::vector<PROCESSINFO> *ppi)
 {
 	ULONG dwSize = 0;
@@ -159,8 +157,6 @@ ProgCodes IoProf::getNtProcessInfo(const DWORD dwPID, PROCESSINFO *ppi)
 
 	ZeroMemory(&spi, sizeof(spi));
 
-	spi.dwPID = dwPID;
-
 	// Attempt to access process
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION |
 		PROCESS_VM_READ, FALSE, dwPID);
@@ -168,7 +164,8 @@ ProgCodes IoProf::getNtProcessInfo(const DWORD dwPID, PROCESSINFO *ppi)
 		return procNotFound;
 	}
 
-	// Attempt to get io counters on process
+	spi.dwPID = dwPID;
+
 	NTSTATUS dwStatus = ntdllapi.gNtQueryInformationProcess(hProcess,
 		ProcessIoCounters,
 		0,
@@ -195,7 +192,6 @@ ProgCodes IoProf::getNtProcessInfo(const DWORD dwPID, PROCESSINFO *ppi)
 	spi.AllBytes = spi.ioCounters.OtherTransferCount + spi.ioCounters.ReadTransferCount + spi.ioCounters.WriteTransferCount;
 	spi.AllOpsCnt = spi.ioCounters.OtherOperationCount + spi.ioCounters.ReadOperationCount + spi.ioCounters.WriteOperationCount;
 
-	// Return filled in structure to caller
 	*ppi = spi;
 
 	return success;

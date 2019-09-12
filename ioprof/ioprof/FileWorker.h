@@ -8,7 +8,7 @@ class FileWorker
 public:
 	FileWorker();
 	~FileWorker();
-	void writeFile(char* filename, std::vector<PROCESSINFO> arr);
+	ProgCodes writeFile(char* filename, std::vector<PROCESSINFO> arr);
 	ProgCodes readFile(char* filename, std::vector<PROCESSINFO> *spi);
 };
 
